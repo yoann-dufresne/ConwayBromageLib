@@ -1,0 +1,65 @@
+language:
+  - cpp
+  - python
+
+cpp: c++11
+
+python: "3.8"
+
+compiler: g++
+
+# Only deploy documentation on pushes to master branch. Change this to fit with your branch workflow.
+branches: 
+    only:
+        - master
+        
+#Allow us to use sudo for installing packages.
+sudo: enabled
+
+before_install:
+      - sudo apt-get update
+      - sudo apt-get install -y doxygen 
+      
+script:
+  - doxygen Doxyfile
+  - g++ addition.cpp tests.cpp -o e
+  - ./e
+
+deploy:
+    provider: pages             # This tells Travis that we want to deploy using GitHub pages.
+    skip-cleanup: true          # Do not remove the files that we want to upload.
+    github-token: $GITHUB_TOKEN # In order to allow Travis to commit to our repositories we need to give it a personal access token. 
+                                # The way to do this in a secure way is to add the token as a hidden environment variable in the Travis repository settings.
+                                # First go to your GitHub settings page. Under developer settings generate a new personal access token. 
+                                # If the repository you want to deploy to is public you only need the public_repo scope. If it is private you need repo.
+                                # Copy this token and go to the Travis CI repository settings for you project repository. 
+                                # Create a new environment variable named GITHUB_TOKEN and set the value to your personal access token. 
+                                # Make sure the Display value in build log slider is set to off so your token stays hidden.
+                                
+                                # Now Travis should be allowed to commit to our documentation repository.
+                                
+    keep-history: true          # Tells Travis to not force push, but keep the history of the repository.
+    on:
+        branch: master          # Deploy when the push is to the master branch.
+    local-dir: docs             # Select what directory to push to the documentation repository. 
+                                # With the directory structure set up as described earlier we simply want to tell Travis to push the entire documentation directory.
+    repo: yoann-dufresne/ConwayBromageLib # The repository to push the documentation to. Written on the form username/reponame.
+    target-branch: master       # The branch to push to on the documentation repository.
+    
+# La méthode est expliqué ici : https://joeloskarsson.github.io/2018/automatic-docs
+
+install:
+  - git clone --recurse-submodules https://github.com/yoann-dufresne/ConwayBromageLib.git
+
+script:
+  - cd $TRAVIS_BUILD_DIR  #dossier où est contenu notre code
+  - doxygen Doxyfile      #génération de la documentation dans le dossier doc/
+  - cd ConwayBromageLib
+  - python3 involveGenerate_counts.py -k 4 -n 100 -f ACTG > unsortACTG.txt
+  - python3 involveGenerate_counts.py -k 4 -n 100 -f ACGT > unsortACGT.txt
+  - sort unsortACGT.txt > sortACGT.txt
+  - python3 sortACTG.py unsortACTG.txt > sortACTG.txt
+  - cmake CMakeLists.txt
+  - make
+  - ./ConwayBromageLib
+  
