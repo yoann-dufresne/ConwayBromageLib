@@ -43,7 +43,7 @@ deploy:
         branch: master          # Deploy when the push is to the master branch.
     local-dir: docs             # Select what directory to push to the documentation repository. 
                                 # With the directory structure set up as described earlier we simply want to tell Travis to push the entire documentation directory.
-    repo: <github-username>/<documentation-repository> # The repository to push the documentation to. Written on the form username/reponame.
+    repo: yoann-dufresne/ConwayBromageLib # The repository to push the documentation to. Written on the form username/reponame.
     target-branch: master       # The branch to push to on the documentation repository.
     
 # La méthode est expliqué ici : https://joeloskarsson.github.io/2018/automatic-docs
